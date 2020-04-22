@@ -3,21 +3,49 @@ from django.core import serializers
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
-import json
-from .models import *
+import json, re
+from .models import Ride
 from .helpers import *
 from .constants import *
 from geolib import geohash
 from django.db.models import Q
-import re
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm
 # Create your views here.
 
+@csrf_exempt
+def signup (request):
+    form = UserCreationForm (request.POST)
+    if  form.is_valid():
+        form.save ()
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate (username=username, password = password)
+        login (request, user)
+        return HttpResponse ('ok')
+    return HttpResponse ('Invalid data')
 
+@csrf_exempt
+def signin (request):
+    username = request.POST ['username']
+    password = request.POST ['password']
+    user = authenticate (request, username = username, password = password)
+    if  user is not None:
+        login(request, user)
+        return HttpResponse ("Ok")
+    else:
+        return HttpResponse ("Unable to aunthenticate")
+
+@csrf_exempt
+def signout (request):
+    logout (request)
+    return HttpResponse ("Ok")
+'''
 @csrf_exempt    
 def signup(request):
     if request.method == 'POST':
         data = json.loads (request.body)
-        '''
+        #
         if isDataValid (data['number'], data['email'], data['firstname'], data['lastname']):
             if (User.objects.filter(number = data['number'])):
                 return HttpResponse ("Duplicate phone number")
@@ -27,7 +55,7 @@ def signup(request):
                 user.full_clean()
             raise Exception as e:
                 return HttpResponse ("Data not clean")
-        '''
+        #
         user = User()
         user.createObject(data)
         try:
@@ -36,7 +64,7 @@ def signup(request):
             return HttpResponse ("Ok")
         except Exception as e:
             return HttpResponse(e)
-
+'''
 @csrf_exempt
 def signin (request):
     if request.method == 'POST':
@@ -87,9 +115,9 @@ def searchRides (request):
         startNeighbours = findNeighbours (ride.startHash)
         endNeighbours = findNeighbours (ride.endHash)
 
-        #slice first PRECISION-CONST_PREC no of characters from the hash for preliminary database search
-        likeStartHash = ride.startHash[:PRECISION-CONST_PREC]
-        likeEndHash = ride.endHash[:PRECISION-CONST_PREC]
+        #slice first PRECISION-VARY_PREC no of characters from the hash for preliminary database search
+        likeStartHash = ride.startHash[:PRECISION-VARY_PREC]
+        likeEndHash = ride.endHash[:PRECISION-VARY_PREC]
         
         #generate regex string to match
         startRegex = makeRegex (startNeighbours)
