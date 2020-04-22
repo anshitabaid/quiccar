@@ -1,0 +1,110 @@
+from django.shortcuts import render
+from django.core import serializers
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import check_password
+import json
+from .models import *
+from .helpers import *
+from .constants import *
+from geolib import geohash
+from django.db.models import Q
+import re
+# Create your views here.
+
+
+@csrf_exempt    
+def signup(request):
+    if request.method == 'POST':
+        data = json.loads (request.body)
+        '''
+        if isDataValid (data['number'], data['email'], data['firstname'], data['lastname']):
+            if (User.objects.filter(number = data['number'])):
+                return HttpResponse ("Duplicate phone number")
+            user = User ()
+            user.createObject (data)
+            try:
+                user.full_clean()
+            raise Exception as e:
+                return HttpResponse ("Data not clean")
+        '''
+        user = User()
+        user.createObject(data)
+        try:
+            user.full_clean()
+            user.save()
+            return HttpResponse ("Ok")
+        except Exception as e:
+            return HttpResponse(e)
+
+@csrf_exempt
+def signin (request):
+    if request.method == 'POST':
+        data=json.loads (request.body)
+        number=data['number']
+        password = data['password']
+        if (isNumberValid (number)==False):
+            return HttpResponse ("Invalid number")
+        user = User.objects.filter (number = number)
+        print (user)
+        if user:
+            encoded_pass = user[0].password
+            if check_password (password, encoded_pass):
+                return HttpResponse ("Ok")
+        return HttpResponse ("Invalid username or password")
+
+
+@csrf_exempt
+def insertRide (request):
+    if request.method=='GET':
+        ride = Ride.objects.create (**request.GET.dict())
+        ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
+        ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
+        try:
+            ride.full_clean()
+            ride.save()
+            return HttpResponse("Ok")
+        except Exception as e:
+            return HttpResponse (e)
+
+@csrf_exempt
+#filter by user
+def viewRidesByUser (request):
+        number = request.GET.dict()['number']
+        rides = Ride.objects.filter (number = number)
+        qs_json = serializers.serialize('json', rides)
+        return HttpResponse(qs_json, content_type='application/json')
+
+
+@csrf_exempt
+def searchRides (request):
+    if request.method=='GET':
+        ride = Ride.objects.create (**request.GET.dict())
+        ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION)
+        ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
+
+        #Neighbouring geohash blocks for start and end points
+        startNeighbours = findNeighbours (ride.startHash)
+        endNeighbours = findNeighbours (ride.endHash)
+
+        #slice first PRECISION-CONST_PREC no of characters from the hash for preliminary database search
+        likeStartHash = ride.startHash[:PRECISION-CONST_PREC]
+        likeEndHash = ride.endHash[:PRECISION-CONST_PREC]
+        
+        #generate regex string to match
+        startRegex = makeRegex (startNeighbours)
+        endRegex = makeRegex (endNeighbours) 
+        
+        try:
+            ride.full_clean()
+            #searching
+            queryRides = Ride.objects.filter (~Q(number=ride.number), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
+            queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
+            queryRidesJson = serializers.serialize ('json', queryRides)
+            return HttpResponse (queryRidesJson, content_type = 'application/json')
+        except Exception as e:
+            return HttpResponse (e)
+
+
+        
+
