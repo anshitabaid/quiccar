@@ -3,6 +3,7 @@ from django.core import serializers
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
+from http import HTTPStatus
 import json, re
 from .models import Ride
 from .helpers import *
@@ -22,8 +23,8 @@ def signup (request):
         password = form.cleaned_data.get('password1')
         user = authenticate (username=username, password = password)
         login (request, user)
-        return HttpResponse ('ok')
-    return HttpResponse ('Invalid data')
+        return HttpResponse("Ok")
+    return HttpResponse (form.errors.as_json())
 
 @csrf_exempt
 def signin (request):
@@ -64,7 +65,7 @@ def signup(request):
             return HttpResponse ("Ok")
         except Exception as e:
             return HttpResponse(e)
-'''
+
 @csrf_exempt
 def signin (request):
     if request.method == 'POST':
@@ -80,7 +81,7 @@ def signin (request):
             if check_password (password, encoded_pass):
                 return HttpResponse ("Ok")
         return HttpResponse ("Invalid username or password")
-
+'''
 
 @csrf_exempt
 def insertRide (request):
