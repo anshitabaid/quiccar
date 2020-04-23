@@ -90,7 +90,7 @@ DATABASES = {
     )
 }
 '''
-prod_db  =  dj_database_url.config(conn_max_age=500)
+prod_db  =  dj_database_url.config()
 DATABASES['default'].update(prod_db)
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
