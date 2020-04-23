@@ -1,18 +1,18 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
-import re
-from django.core.validators import RegexValidator
+from .constants import *
+from django.contrib.auth.models import User
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
-alphabet = RegexValidator (r"^[a-zA-Z]+$", "Only letters alllowed")
-phoneNumber = RegexValidator (r"^[0-9]{10}$", "Invalid phone number")
-
+'''
 class User (models.Model):
-    number = models.CharField (max_length = 10, primary_key = True, unique = True, validators = [phoneNumber])
+    number = models.CharField (max_length = 10, primary_key = True, unique = True, validators = [PHONENUMBER_VALIDATOR])
     password = models.CharField (max_length = 100)
     email = models.EmailField()
-    firstname = models.CharField (max_length = 10, validators = [alphabet])
-    lastname = models.CharField (max_length= 10, validators = [alphabet])
+    firstname = models.CharField (max_length = 10, validators = [ALPHABET_VALIDATOR])
+    lastname = models.CharField (max_length= 10, validators = [ALPHABET_VALIDATOR])
     def __str__ (self):
         return self.number
     
@@ -22,7 +22,7 @@ class User (models.Model):
         self.firstname = data['firstname']
         self.lastname = data['lastname']
         self.email = data['email']
-    '''
+    #
     def clean (self):
         print (self.email)
         if (re.match (r"^[A-Za-z0-9._%+-]+\@[a-zA-Z0-9]+\.[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)?$", self.email)) is None:
@@ -34,12 +34,11 @@ class User (models.Model):
             raise ValidationError(_('Invalid name'))
         if (re.match (r"[a-zA-Z]+", self.lastname)) is None:
             raise ValidationError(_('Invalid name'))
-        '''
-
-
+    #
+'''
 
 class Ride (models.Model):
-    number = models.CharField (max_length = 10,  validators = [phoneNumber])
+    number = models.CharField (max_length = 10,  validators = [PHONENUMBER_VALIDATOR])
     startX = models.DecimalField(max_digits=9, decimal_places=6)
     startY = models.DecimalField(max_digits=9, decimal_places=6)
     endX = models.DecimalField(max_digits=9, decimal_places=6)
@@ -56,3 +55,21 @@ class Ride (models.Model):
         return self.number + ' ' + self.startHash + ' ' +self.endHash
 
 
+class Profile (models.Model):
+    user = models.OneToOneField(User, on_delete = models.CASCADE)
+    number = models.CharField (max_length =10, validators =[PHONENUMBER_VALIDATOR])
+    email = models.EmailField()
+    firstname = models.CharField (max_length = 10, validators = [ALPHABET_VALIDATOR])
+    lastname = models.CharField (max_length= 10, validators = [ALPHABET_VALIDATOR])
+
+    def __str__ (self):
+        return (self.user.username +" " + self.number )
+
+@receiver (post_save, sender= User)
+def create_user_profile (sender, instance, created, **kwargs):
+    if created :
+        Profile.objects.create (user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()

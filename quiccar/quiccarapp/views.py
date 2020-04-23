@@ -12,6 +12,7 @@ from geolib import geohash
 from django.db.models import Q
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
+from .forms import SignUpForm
 # Create your views here.
 
 
@@ -20,12 +21,18 @@ def index (request):
 
 @csrf_exempt
 def signup (request):
-    form = UserCreationForm (request.POST)
+    form = SignUpForm (request.POST)
     if  form.is_valid():
-        form.save ()
+        user = form.save ()
+        user.refresh_from_db
+        user.profile.number=form.cleaned_data.get('number')
+        user.profile.firstname = form.cleaned_data.get('firstname')
+        user.profile.lastname = form.cleaned_data.get('lastname')
+        user.profile.email = form.cleaned_data.get('email')
+        user.save()
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password1')
-        user = authenticate (username=username, password = password)
+        #user = authenticate (username=username, password = password)
         login (request, user)
         return HttpResponse("Ok")
     return HttpResponse (form.errors.as_json())
