@@ -1,1 +1,1 @@
-web: gunicorn quiccar.wsgi --log-file --preload
+web: gunicorn quiccar.wsgi --log-file - --preload
