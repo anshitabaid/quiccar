@@ -6,4 +6,5 @@ db.sqlite3
 media
 env/
 .vscode/
-quickkar/quickkar/secrets.py
+quiccar/quiccar/secrets.py
+quiccar/quiccar/local_settings.py
