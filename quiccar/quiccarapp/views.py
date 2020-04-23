@@ -131,6 +131,7 @@ def searchRides (request):
         try:
             ride.full_clean()
             #searching
+            #queryRides = Ride.objects.all()
             queryRides = Ride.objects.filter (~Q(number=ride.number), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
             queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
             queryRidesJson = serializers.serialize ('json', queryRides)

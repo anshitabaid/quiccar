@@ -1,1 +1,2 @@
 web: gunicorn quiccar.wsgi --log-file - --preload
+release: python manage.py migrate

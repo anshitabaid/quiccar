@@ -8,3 +8,5 @@ env/
 .vscode/
 quiccar/quiccar/secrets.py
 quiccar/quiccar/local_settings.py
+quiccar/.git/
+quiccar/.gitignore
