@@ -14,7 +14,8 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
 # Create your views here.
 
-def index ():
+
+def index (request):
     return HttpResponse ("Hello")
 
 @csrf_exempt
