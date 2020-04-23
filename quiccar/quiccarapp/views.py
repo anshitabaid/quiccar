@@ -14,6 +14,9 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
 # Create your views here.
 
+def index ();
+    return HttpResponse ("Hello")
+
 @csrf_exempt
 def signup (request):
     form = UserCreationForm (request.POST)
