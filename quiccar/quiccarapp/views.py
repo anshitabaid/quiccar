@@ -134,15 +134,15 @@ def insertRide (request):
             return HttpResponse (e)
     
 
-@csrf_exempt
 #filter by user
+@csrf_exempt
 def viewRidesByUser (request):
         username = request.GET['username']
         rides = Ride.objects.filter (user__username = username)
         qs_json = serializers.serialize('json', rides)
         return HttpResponse(qs_json, content_type='application/json')
-
-
+'''
+@login_required
 @csrf_exempt
 def searchRides (request):
     if request.method=='GET':
@@ -172,8 +172,37 @@ def searchRides (request):
             return HttpResponse (queryRidesJson, content_type = 'application/json')
         except Exception as e:
             return HttpResponse (e)
+'''
 
+@login_required
+@csrf_exempt
+def searchRides (request):
+    if request.method=='GET':
+        data = request.GET.dict()
+        data['user'] = request.user
+        ride = Ride.objects.create (**data)
+        ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION)
+        ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
 
+        #Neighbouring geohash blocks for start and end points
+        startNeighbours = findNeighbours (ride.startHash)
+        endNeighbours = findNeighbours (ride.endHash)
+
+        #slice first PRECISION-VARY_PREC no of characters from the hash for preliminary database search
+        likeStartHash = ride.startHash[:PRECISION-VARY_PREC]
+        likeEndHash = ride.endHash[:PRECISION-VARY_PREC]
         
-
-
+        #generate regex string to match
+        startRegex = makeRegex (startNeighbours)
+        endRegex = makeRegex (endNeighbours) 
+        
+        try:
+            ride.full_clean()
+            #searching
+            #queryRides = Ride.objects.all()
+            queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
+            queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
+            queryRidesJson = serializers.serialize ('json', queryRides)
+            return HttpResponse (queryRidesJson, content_type = 'application/json')
+        except Exception as e:
+            return HttpResponse (e)
