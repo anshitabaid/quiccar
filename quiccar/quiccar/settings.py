@@ -23,7 +23,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY_QUICCAR')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost', 'quiccar.herokuapp.com']
 
 
 # Application definition

@@ -38,7 +38,8 @@ class User (models.Model):
 '''
 
 class Ride (models.Model):
-    number = models.CharField (max_length = 10,  validators = [PHONENUMBER_VALIDATOR])
+    #number = models.CharField (max_length = 10,  validators = [PHONENUMBER_VALIDATOR])
+    user = models.OneToOneField(User, on_delete = models.CASCADE, blank = True)    
     startX = models.DecimalField(max_digits=9, decimal_places=6)
     startY = models.DecimalField(max_digits=9, decimal_places=6)
     endX = models.DecimalField(max_digits=9, decimal_places=6)
@@ -52,7 +53,7 @@ class Ride (models.Model):
     isActive = models.BooleanField ()
     
     def __str__ (self):
-        return self.number + ' ' + self.startHash + ' ' +self.endHash
+        return self.user.profile.number + ' ' + self.startHash + ' ' +self.endHash
 
 
 class Profile (models.Model):

@@ -97,15 +97,20 @@ def signin (request):
 @csrf_exempt
 def insertRide (request):
     if request.method=='GET':
-        ride = Ride.objects.create (**request.GET.dict())
-        ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
-        ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
-        try:
-            ride.full_clean()
-            ride.save()
-            return HttpResponse("Ok")
-        except Exception as e:
-            return HttpResponse (e)
+        if request.user.is_authenticated:
+            data = request.GET.dict()
+            data['user'] = request.user
+            ride = Ride.objects.create (**data)
+            ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
+            ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
+            try:
+                ride.full_clean()
+                ride.save()
+                return HttpResponse("Ok")
+            except Exception as e:
+                return HttpResponse (e)
+        else:
+            return HttpResponse ("User not logged in")
 
 @csrf_exempt
 #filter by user
@@ -148,4 +153,5 @@ def searchRides (request):
 
 
         
+
 
