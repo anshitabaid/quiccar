@@ -26,9 +26,9 @@ def signup (request):
         user = form.save ()
         user.refresh_from_db
         user.profile.number=form.cleaned_data.get('number')
-        user.profile.firstname = form.cleaned_data.get('firstname')
-        user.profile.lastname = form.cleaned_data.get('lastname')
-        user.profile.email = form.cleaned_data.get('email')
+        #user.profile.firstname = form.cleaned_data.get('firstname')
+        #user.profile.lastname = form.cleaned_data.get('lastname')
+        #user.profile.email = form.cleaned_data.get('email')
         user.save()
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password1')

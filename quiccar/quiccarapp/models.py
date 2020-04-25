@@ -50,7 +50,7 @@ class Ride (models.Model):
     time  = models.DateTimeField ()
     capacity = models.IntegerField()
     isActive = models.BooleanField ()
-
+    
     def __str__ (self):
         return self.number + ' ' + self.startHash + ' ' +self.endHash
 
@@ -58,9 +58,6 @@ class Ride (models.Model):
 class Profile (models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
     number = models.CharField (max_length =10, validators =[PHONENUMBER_VALIDATOR])
-    email = models.EmailField()
-    firstname = models.CharField (max_length = 10, validators = [ALPHABET_VALIDATOR])
-    lastname = models.CharField (max_length= 10, validators = [ALPHABET_VALIDATOR])
 
     def __str__ (self):
         return (self.user.username +" " + self.number )
