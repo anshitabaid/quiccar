@@ -3,6 +3,7 @@ from django.core import serializers
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.decorators import login_required
 from http import HTTPStatus
 import json, re
 from .models import Ride
@@ -52,6 +53,9 @@ def signin (request):
 def signout (request):
     logout (request)
     return HttpResponse ("Ok")
+
+def pleaseLogin (request):
+    return HttpResponse ("Please login")
 '''
 @csrf_exempt    
 def signup(request):
@@ -93,7 +97,7 @@ def signin (request):
                 return HttpResponse ("Ok")
         return HttpResponse ("Invalid username or password")
 '''
-
+'''
 @csrf_exempt
 def insertRide (request):
     if request.method=='GET':
@@ -111,6 +115,24 @@ def insertRide (request):
                 return HttpResponse (e)
         else:
             return HttpResponse ("User not logged in")
+'''
+
+@csrf_exempt
+@login_required
+def insertRide (request):
+    if request.method=='GET':
+        data = request.GET.dict()
+        data['user'] = request.user
+        ride = Ride.objects.create (**data)
+        ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
+        ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
+        try:
+            ride.full_clean()
+            ride.save()
+            return HttpResponse("Ok")
+        except Exception as e:
+            return HttpResponse (e)
+    
 
 @csrf_exempt
 #filter by user
