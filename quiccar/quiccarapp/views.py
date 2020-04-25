@@ -115,8 +115,8 @@ def insertRide (request):
 @csrf_exempt
 #filter by user
 def viewRidesByUser (request):
-        number = request.GET.dict()['number']
-        rides = Ride.objects.filter (number = number)
+        username = request.GET['username']
+        rides = Ride.objects.filter (user__username = username)
         qs_json = serializers.serialize('json', rides)
         return HttpResponse(qs_json, content_type='application/json')
 
