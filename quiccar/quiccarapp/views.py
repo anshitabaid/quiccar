@@ -97,6 +97,7 @@ def signin (request):
                 return HttpResponse ("Ok")
         return HttpResponse ("Invalid username or password")
 '''
+
 '''
 @csrf_exempt
 def insertRide (request):
