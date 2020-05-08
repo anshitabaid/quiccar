@@ -124,7 +124,7 @@ def insertRide (request):
     if request.method=='GET':
         data = request.GET.dict()
         data['user'] = request.user
-        ride = Ride.objects.create (**data)
+        ride = Ride(**data)
         ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
         try:
@@ -181,7 +181,7 @@ def searchRides (request):
     if request.method=='GET':
         data = request.GET.dict()
         data['user'] = request.user
-        ride = Ride.objects.create (**data)
+        ride = Ride(**data)
         ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION)
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
 
@@ -200,7 +200,6 @@ def searchRides (request):
         try:
             ride.full_clean()
             #searching
-            #queryRides = Ride.objects.all()
             queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
             queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
             queryRidesJson = serializers.serialize ('json', queryRides)

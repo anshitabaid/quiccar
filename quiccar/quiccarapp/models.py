@@ -50,9 +50,13 @@ class Ride (models.Model):
     time  = models.DateTimeField ()
     capacity = models.IntegerField()
     isActive = models.BooleanField ()
+    timeInserted = models.DateTimeField(auto_now=True)
     
     def __str__ (self):
-        return self.user.profile.number + ' ' + self.startHash + ' ' +self.endHash
+        return self.user.profile.number + ' ' + self.startAddress + ' ' +self.endAddress
+
+    
+
 
 
 class Profile (models.Model):
