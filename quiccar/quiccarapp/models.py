@@ -43,14 +43,15 @@ class Ride (models.Model):
     startY = models.DecimalField(max_digits=9, decimal_places=6)
     endX = models.DecimalField(max_digits=9, decimal_places=6)
     endY = models.DecimalField(max_digits=9, decimal_places=6)
-    startHash = models.CharField(db_index = True, max_length = 12, blank = True)
-    endHash = models.CharField(db_index = True, max_length = 12, blank = True)
+    startHash = models.CharField(db_index = True, max_length = 12, blank = True, null=True)
+    endHash = models.CharField(db_index = True, max_length = 12, blank = True, null=True)
     startAddress = models.CharField(max_length = 100)
     endAddress = models.CharField (max_length = 100)
     time  = models.DateTimeField ()
     capacity = models.IntegerField()
     isActive = models.BooleanField ()
-    timeInserted = models.DateTimeField(auto_now=True)
+    
+    #timeInserted = models.DateTimeField(auto_now=True)
     
     def __str__ (self):
         return self.user.profile.number + ' ' + self.startAddress + ' ' +self.endAddress
