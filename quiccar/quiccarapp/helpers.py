@@ -1,7 +1,10 @@
-import re
+import re, json
 from geolib import geohash
 from .constants import *
 from django.http import HttpResponse
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db.models.query import QuerySet
 
 def isEmailValid (email):
     if (re.match (r"^[A-Za-z0-9._%+-]+\@[a-zA-Z0-9]+\.[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)?$", email)) is None:
@@ -61,3 +64,34 @@ def findNeighbours (hash):
     neighbours = list(geohash.neighbours(hash))
     neighbours.append (hash)
     return neighbours
+
+def converter(obj):
+    ret = {}
+    if isinstance (obj, ValidationError):
+        for key, value in obj:
+            ret[key] = value
+        return ret
+    if isinstance (obj, User):
+        ret['username']=obj.username
+        ret['firstname']=obj.first_name
+        ret['lastname']=obj.last_name
+        ret['email']=obj.email
+        ret['phone']=obj.profile.number
+        return ret
+
+    return None
+'''
+def userDict (user):
+    u={}
+    u['username']=user.username
+    u['firstname']=user.first_name
+    u['lastname']=user.last_name
+    u['email']=user.email
+    u['phone']=user.profile.number
+    return u
+'''
+def sendResponse (success, message):
+    response = {}
+    response['success']=success
+    response['message']=message
+    return HttpResponse (json.dumps (response, default = converter),  content_type = 'application/json')

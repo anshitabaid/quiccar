@@ -12,8 +12,9 @@ from .constants import *
 from geolib import geohash
 from django.db.models import Q
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.forms import UserCreationForm
+#from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
+from django.forms.models import model_to_dict
 # Create your views here.
 
 
@@ -35,8 +36,8 @@ def signup (request):
         password = form.cleaned_data.get('password1')
         #user = authenticate (username=username, password = password)
         login (request, user)
-        return HttpResponse("Ok")
-    return HttpResponse (form.errors.as_json())
+        return sendResponse (True, None)
+    return sendResponse (False, form.errors)
 
 @csrf_exempt
 def signin (request):
@@ -45,17 +46,17 @@ def signin (request):
     user = authenticate (request, username = username, password = password)
     if  user is not None:
         login(request, user)
-        return HttpResponse ("Ok")
+        return sendResponse (True, user)
     else:
-        return HttpResponse ("Unable to aunthenticate")
+        return sendResponse (False, "Unable to authenticate")
 
 @csrf_exempt
 def signout (request):
     logout (request)
-    return HttpResponse ("Ok")
+    return sendResponse (True, None)
 
 def pleaseLogin (request):
-    return HttpResponse ("Please login")
+    return sendResponse (False, "Please login")
 '''
 @csrf_exempt    
 def signup(request):
@@ -125,14 +126,15 @@ def insertRide (request):
         data = request.GET.dict()
         data['user'] = request.user
         ride = Ride(**data)
-        ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
-        ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
         try:
             ride.full_clean()
-            ride.save()
-            return HttpResponse("Ok")
         except Exception as e:
-            return HttpResponse (e)
+            return sendResponse (False, e)
+        ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
+        ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
+        ride.save()
+        return sendResponse(True, None)
+        
     
 
 #filter by user
@@ -141,7 +143,7 @@ def viewRidesByUser (request):
         username = request.GET['username']
         rides = Ride.objects.filter (user__username = username)
         qs_json = serializers.serialize('json', rides)
-        return HttpResponse(qs_json, content_type='application/json')
+        return sendResponse(True, qs_json ) #, content_type='application/json')
 '''
 @login_required
 @csrf_exempt
@@ -182,6 +184,10 @@ def searchRides (request):
         data = request.GET.dict()
         data['user'] = request.user
         ride = Ride(**data)
+        try:
+            ride.full_clean()
+        except Exception as e:
+            return sendResponse (False,e)
         ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION)
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
 
@@ -197,12 +203,9 @@ def searchRides (request):
         startRegex = makeRegex (startNeighbours)
         endRegex = makeRegex (endNeighbours) 
         
-        try:
-            ride.full_clean()
-            #searching
-            queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
-            queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
-            queryRidesJson = serializers.serialize ('json', queryRides)
-            return HttpResponse (queryRidesJson, content_type = 'application/json')
-        except Exception as e:
-            return HttpResponse (e)
+        
+        queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
+        queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
+        queryRidesJson = serializers.serialize ('json', queryRides)
+        return sendResponse (True, queryRidesJson)
+            
