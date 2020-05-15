@@ -50,16 +50,13 @@ class Ride (models.Model):
     time  = models.DateTimeField ()
     capacity = models.IntegerField()
     isActive = models.BooleanField ()
-    
+
     #timeInserted = models.DateTimeField(auto_now=True)
     
     def __str__ (self):
         return self.user.profile.number + ' ' + self.startAddress + ' ' +self.endAddress
 
     
-
-
-
 class Profile (models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
     number = models.CharField (max_length =10, validators =[PHONENUMBER_VALIDATOR])
@@ -78,3 +75,13 @@ def create_user_profile (sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+
+class PasswordReset (models.Model):
+    username = models.CharField (max_length=150, primary_key = True)
+    token = models.CharField (max_length=TOKEN_LENGTH)
+    added =models.DateTimeField (auto_now= True, null = True )
+
+    def __str__ (self):
+        return self.username
+

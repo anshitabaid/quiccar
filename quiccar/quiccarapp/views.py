@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from http import HTTPStatus
 import json, re
-from .models import Ride
+from .models import *
 from .helpers import *
 from .constants import *
 from geolib import geohash
@@ -15,8 +15,8 @@ from django.contrib.auth import login, authenticate, logout
 #from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
 from django.forms.models import model_to_dict
-# Create your views here.
-
+from django.core.mail import send_mail
+from django.conf import settings
 
 def index (request):
     return HttpResponse ("Hello")
@@ -140,6 +140,7 @@ def insertRide (request):
 #filter by user
 @csrf_exempt
 def viewRidesByUser (request):
+    if request.method=='GET':
         username = request.GET['username']
         rides = Ride.objects.filter (user__username = username)
         qs_json = serializers.serialize('json', rides)
@@ -208,4 +209,64 @@ def searchRides (request):
         queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
         queryRidesJson = serializers.serialize ('json', queryRides)
         return sendResponse (True, queryRidesJson)
-            
+    return sendResponse(False, 'Incorrect method')
+
+#@csrf_exempt
+def registerToken (request):
+    if request.method=='GET':
+        data = request.GET.dict()
+        try:
+            entry = User.objects.get (username = data['username'])
+        except Exception as e:
+            return sendResponse(False, 'Username does not exist')
+        pr = PasswordReset (**data)
+        pr.token = makeToken()
+        link= CHANGE_PASSWORD_LINK.format (username=entry.username, token=pr.token)
+        body = EMAIL_BODY.format (name = entry.get_short_name(), link = link)
+        try:
+            print (body)
+            send_mail('Password reset', body, settings.EMAIL_HOST_USER, [entry.email], fail_silently=False)        
+            pr.save()        
+            return sendResponse(True, None)
+        except Exception as e:
+            return sendResponse(False, 'Internal server error')
+    return sendResponse(False, 'Incorrect method')
+
+@csrf_exempt
+def verifyToken (request):
+    if request.method == 'GET':
+        data=request.GET.dict()
+        flag = True
+        try:
+            entry = PasswordReset.objects.get (username = data['username'], token = data['token'])
+        except Exception as e:
+            flag = False
+            #return sendResponse(False, 'Invalid username or token')
+        return render (request, 'password_reset.html', {'flag':flag, 'username':entry.username})
+
+
+    elif request.method=='POST':
+        data = request.POST
+        print (data)
+        if data['password1']!=data['password2']:
+            return render (request, 'password_reset.html', {'flag': True, 'message':'Both passwords should match'})
+        '''
+        try:
+            entry = PasswordReset.objects.get (username = data['username'], token = data['token']).first()
+        except Exception as e:
+            return sendResponse(False, 'Incorrect username or token')
+        '''
+        #find user and update the password
+        try:
+            user = User.objects.get (username = data['username'])
+            user.set_password(data['password'])
+            user.save()
+            #delete token entry
+            entry.delete()
+        except Exception as e:
+            return render (request, 'password_reset.html',{'flag':True, 'message':'Invalid username or password'})
+        
+        return HttpResponse('Password reset successful!')
+        
+    else:
+        return sendResponse(False, 'Incorrect method')

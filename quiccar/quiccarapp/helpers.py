@@ -1,10 +1,11 @@
-import re, json
+import re, json, random, string
 from geolib import geohash
 from .constants import *
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
+
 
 def isEmailValid (email):
     if (re.match (r"^[A-Za-z0-9._%+-]+\@[a-zA-Z0-9]+\.[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)?$", email)) is None:
@@ -95,3 +96,8 @@ def sendResponse (success, message):
     response['success']=success
     response['message']=message
     return HttpResponse (json.dumps (response, default = converter),  content_type = 'application/json')
+
+
+def makeToken ():
+    characters=string.ascii_letters+string.digits
+    return ''.join((random.choice(characters) for i in range(TOKEN_LENGTH)))
