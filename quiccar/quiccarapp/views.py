@@ -221,50 +221,49 @@ def registerToken (request):
             return sendResponse(False, 'Username does not exist')
         pr = PasswordReset (**data)
         pr.token = makeToken()
+        #Prepare email body
         link= CHANGE_PASSWORD_LINK.format (username=entry.username, token=pr.token)
         body = EMAIL_BODY.format (name = entry.get_short_name(), link = link)
         try:
-            print (body)
-            send_mail('Password reset', body, settings.EMAIL_HOST_USER, [entry.email], fail_silently=False)        
-            pr.save()        
-            return sendResponse(True, None)
+            send_mail(EMAIL_SUBJECT,body, settings.EMAIL_HOST_USER, [entry.email], fail_silently=False)        
         except Exception as e:
             return sendResponse(False, 'Internal server error')
+        pr.save()        
+        return sendResponse(True, None)
     return sendResponse(False, 'Incorrect method')
 
 @csrf_exempt
 def verifyToken (request):
+    #Route to redirect to form for password reset
     if request.method == 'GET':
         data=request.GET.dict()
-        flag = True
         try:
             entry = PasswordReset.objects.get (username = data['username'], token = data['token'])
         except Exception as e:
-            flag = False
-            #return sendResponse(False, 'Invalid username or token')
-        return render (request, 'password_reset.html', {'flag':flag, 'username':entry.username})
+            return render (request, 'password_reset.html', {'flag':False})
+        return render (request, 'password_reset.html', {'flag':True, 'username':entry.username, 'token': entry.token})
 
-
+    #new password form
     elif request.method=='POST':
         data = request.POST
-        print (data)
         if data['password1']!=data['password2']:
-            return render (request, 'password_reset.html', {'flag': True, 'message':'Both passwords should match'})
-        '''
+            return render (request, 'password_reset.html', {'flag': True, 'message':'Both passwords should match', 'username': data['username'], 'token':data['token']})
+        #retrieve token object from database
         try:
-            entry = PasswordReset.objects.get (username = data['username'], token = data['token']).first()
+            entry = PasswordReset.objects.get (username = data['username'], token = data['token'])
+            #TODO: Check if link expired
         except Exception as e:
-            return sendResponse(False, 'Incorrect username or token')
-        '''
-        #find user and update the password
+            return HttpResponse('Invalid link')
         try:
+            #find user and update the password
             user = User.objects.get (username = data['username'])
-            user.set_password(data['password'])
+            user.set_password(data['password1'])
             user.save()
             #delete token entry
             entry.delete()
         except Exception as e:
-            return render (request, 'password_reset.html',{'flag':True, 'message':'Invalid username or password'})
+            print (e)
+            return render (request, 'password_reset.html',{'flag':True, 'message':'Invalid password', 'username':data['username'], 'token': data['token']})
         
         return HttpResponse('Password reset successful!')
         

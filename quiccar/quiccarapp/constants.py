@@ -10,3 +10,4 @@ PHONENUMBER_VALIDATOR = RegexValidator (r"^[0-9]{10}$", "Invalid phone number")
 
 CHANGE_PASSWORD_LINK='http://localhost:8000/quiccar/verifyToken?username={username}&token={token}'
 EMAIL_BODY = 'Hello {name}.\nPlease click on this link to reset your password.\n\n{link}\n\Thank you!'
+EMAIL_SUBJECT = 'Password reset'
