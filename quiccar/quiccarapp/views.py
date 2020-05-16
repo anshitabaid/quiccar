@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from http import HTTPStatus
-import json, re
+import json, re, datetime
 from .models import *
 from .helpers import *
 from .constants import *
@@ -224,10 +224,11 @@ def registerToken (request):
         #Prepare email body
         link= CHANGE_PASSWORD_LINK.format (username=entry.username, token=pr.token)
         body = EMAIL_BODY.format (name = entry.get_short_name(), link = link)
+        print (link)
         try:
-            send_mail(EMAIL_SUBJECT,body, settings.EMAIL_HOST_USER, [entry.email], fail_silently=False)        
+            send_mail(EMAIL_SUBJECT,body, settings.EMAIL_HOST_USER, [entry.email], fail_silently=False)   
         except Exception as e:
-            return sendResponse(False, 'Internal server error')
+            return sendResponse(False, 'Mail not sent')
         pr.save()        
         return sendResponse(True, None)
     return sendResponse(False, 'Incorrect method')
@@ -239,8 +240,14 @@ def verifyToken (request):
         data=request.GET.dict()
         try:
             entry = PasswordReset.objects.get (username = data['username'], token = data['token'])
+            now = datetime.datetime.now (TIMEZONE)
+            if (now-entry.added).total_seconds() > LINK_VALID_TIME*60*60:
+                #if link is older than 12 hours
+                entry.delete()
+                raise Exception ()
         except Exception as e:
             return render (request, 'password_reset.html', {'flag':False})
+        now = datetime.datetime.now(TIMEZONE)
         return render (request, 'password_reset.html', {'flag':True, 'username':entry.username, 'token': entry.token})
 
     #new password form
