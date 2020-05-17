@@ -74,10 +74,10 @@ def converter(obj):
         return ret
     if isinstance (obj, User):
         ret['username']=obj.username
-        ret['firstname']=obj.first_name
-        ret['lastname']=obj.last_name
+        ret['first_name']=obj.first_name
+        ret['last_name']=obj.last_name
         ret['email']=obj.email
-        ret['phone']=obj.profile.number
+        ret['number']=obj.profile.number
         return ret
 
     return None
