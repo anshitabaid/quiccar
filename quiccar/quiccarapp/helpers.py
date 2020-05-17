@@ -97,8 +97,7 @@ def sendResponse (success, message):
     if success:
         response['message']=message
     else:
-        response['message']={}
-        response['message']['error']=message
+        response['error']=message
     return HttpResponse (json.dumps (response, default = converter),  content_type = 'application/json')
 
 
