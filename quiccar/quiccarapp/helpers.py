@@ -94,7 +94,11 @@ def userDict (user):
 def sendResponse (success, message):
     response = {}
     response['success']=success
-    response['message']=message
+    if success:
+        response['message']=message
+    else:
+        response['message']={}
+        response['message']['error']=message
     return HttpResponse (json.dumps (response, default = converter),  content_type = 'application/json')
 
 

@@ -19,7 +19,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 def index (request):
-    return HttpResponse ("Hello")
+    return sendResponse (True, "Hello")
 
 @csrf_exempt
 def signup (request):
@@ -258,7 +258,6 @@ def verifyToken (request):
         #retrieve token object from database
         try:
             entry = PasswordReset.objects.get (username = data['username'], token = data['token'])
-            #TODO: Check if link expired
         except Exception as e:
             return HttpResponse('Invalid link')
         try:
