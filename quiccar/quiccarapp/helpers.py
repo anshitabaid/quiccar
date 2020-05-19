@@ -111,7 +111,8 @@ def parseRides(queryRides):
     for qr in queryRides:
         d={}
         d['pk']=qr.pk
-        d['full_name']=qr.user.get_full_name()
+        d['first_name']=qr.user.get_short_name()
+        d['last_name']=qr.user.last_name
         d['number']=qr.user.profile.number
         d['email']=qr.user.email
         d['startX']=float(qr.startX)
