@@ -45,11 +45,11 @@ class Ride (models.Model):
     endY = models.DecimalField(max_digits=9, decimal_places=6)
     startHash = models.CharField(db_index = True, max_length = 12, blank = True, null=True)
     endHash = models.CharField(db_index = True, max_length = 12, blank = True, null=True)
-    startAddress = models.CharField(max_length = 100)
-    endAddress = models.CharField (max_length = 100)
+    startAddress = models.CharField(max_length = 100,blank = True)
+    endAddress = models.CharField (max_length = 100, blank = True)
     time  = models.DateTimeField ()
     capacity = models.IntegerField()
-    isActive = models.BooleanField ()
+    isActive = models.BooleanField (blank = True)
 
     #timeInserted = models.DateTimeField(auto_now=True)
     

@@ -104,3 +104,23 @@ def sendResponse (success, message):
 def makeToken ():
     characters=string.ascii_letters+string.digits
     return ''.join((random.choice(characters) for i in range(TOKEN_LENGTH)))
+
+
+def parseRides(queryRides):
+    l = []
+    for qr in queryRides:
+        d={}
+        d['pk']=qr.pk
+        d['full_name']=qr.user.get_full_name()
+        d['number']=qr.user.profile.number
+        d['email']=qr.user.email
+        d['startX']=float(qr.startX)
+        d['startY']=float(qr.startY)
+        d['endX']=float(qr.endX)
+        d['endY']=float(qr.endY)
+        d['startAddress']=qr.startAddress
+        d['endAddress']=qr.endAddress
+        d['time']=qr.time.strftime(DATETIME_FORMAT)
+        d['capacity']=qr.capacity
+        l.append (d)
+    return l

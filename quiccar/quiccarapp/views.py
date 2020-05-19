@@ -207,8 +207,10 @@ def searchRides (request):
         
         queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
         queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
-        queryRidesJson = serializers.serialize ('json', queryRides)
-        return sendResponse (True, queryRidesJson)
+        queryRides = parseRides (queryRides)
+        #queryRidesJson = serializers.serialize ('json', queryRides)
+        #return HttpResponse (queryRides, content_type = 'application/json')
+        return sendResponse (True, queryRides)
     return sendResponse(False, 'Incorrect method')
 
 #@csrf_exempt

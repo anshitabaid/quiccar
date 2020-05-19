@@ -14,3 +14,5 @@ CHANGE_PASSWORD_LINK='http://quiccar2.herokuapp.com/quiccar/verifyToken?username
 EMAIL_BODY = 'Hello {name}.\nPlease click on this link to reset your password.\n\n{link}\n\nThis link is valid for ' + str(LINK_VALID_TIME) + ' hours.\n\n' +  'Thank you!'
 EMAIL_SUBJECT = 'Password reset'
 TIMEZONE = pytz.timezone ('Asia/Kolkata')
+
+DATETIME_FORMAT = "%d-%b-%Y %H:%M:%S"
