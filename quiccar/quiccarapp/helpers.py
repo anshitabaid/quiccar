@@ -115,10 +115,10 @@ def parseRides(queryRides):
         d['last_name']=qr.user.last_name
         d['number']=qr.user.profile.number
         d['email']=qr.user.email
-        d['startX']=float(qr.startX)
-        d['startY']=float(qr.startY)
-        d['endX']=float(qr.endX)
-        d['endY']=float(qr.endY)
+        d['startX']=str(qr.startX)
+        d['startY']=str(qr.startY)
+        d['endX']=str(qr.endX)
+        d['endY']=str(qr.endY)
         d['startAddress']=qr.startAddress
         d['endAddress']=qr.endAddress
         d['time']=qr.time.strftime(DATETIME_FORMAT)
