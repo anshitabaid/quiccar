@@ -110,7 +110,7 @@ def parseRides(queryRides):
     l = []
     for qr in queryRides:
         d={}
-        d['pk']=qr.pk
+        d['id']=qr.pk
         d['first_name']=qr.user.get_short_name()
         d['last_name']=qr.user.last_name
         d['number']=qr.user.profile.number
@@ -123,5 +123,6 @@ def parseRides(queryRides):
         d['endAddress']=qr.endAddress
         d['time']=qr.time.strftime(DATETIME_FORMAT)
         d['capacity']=qr.capacity
+        d['isActive'] = qr.isActive
         l.append (d)
     return l

@@ -142,9 +142,10 @@ def insertRide (request):
 def viewRidesByUser (request):
     if request.method=='GET':
         username = request.GET['username']
-        rides = Ride.objects.filter (user__username = username)
-        qs_json = serializers.serialize('json', rides)
-        return sendResponse(True, qs_json ) #, content_type='application/json')
+        queryRides = Ride.objects.filter (user__username = username)
+        queryRides = parseRides (queryRides)
+        #qs_json = serializers.serialize('json', rides)
+        return sendResponse(True, queryRides ) #, content_type='application/json')
 '''
 @login_required
 @csrf_exempt
