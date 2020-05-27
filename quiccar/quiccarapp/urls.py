@@ -1,18 +1,18 @@
 from django.urls import path
-from . import views
+from . import views, auth_views, ride_views
 
 urlpatterns = [
     path ('', views.index, name = 'index'),
-    path ('signup', views.signup, name = 'signup'),
-    path ('signin', views.signin, name = 'signin'),
-    path ('signout', views.signout, name = 'signout'),
+    path ('signup', auth_views.signup, name = 'signup'),
+    path ('signin', auth_views.signin, name = 'signin'),
+    path ('signout', auth_views.signout, name = 'signout'),
     path ('pleaseLogin', views.pleaseLogin, name = 'pleaseLogin'),
-    path ('insertRide', views.insertRide, name = 'insertRide'), 
-    path ('viewRidesByUser', views.viewRidesByUser, name = 'viewRidesByUser'),
-    path ('searchRide', views.searchRides, name = 'searchRides'), 
-    path('registerToken', views.registerToken, name = 'registerToken'),
-    path('verifyToken', views.verifyToken, name = 'verifyToken'), 
-    path ('changeRideStatus', views.changeRideStatus, name='changeRideStatus')
+    path ('insertRide', ride_views.insertRide, name = 'insertRide'), 
+    path ('viewRidesByUser', ride_views.viewRidesByUser, name = 'viewRidesByUser'),
+    path ('searchRide', ride_views.searchRides, name = 'searchRides'), 
+    path('registerToken', auth_views.registerToken, name = 'registerToken'),
+    path('verifyToken', auth_views.verifyToken, name = 'verifyToken'), 
+    path ('changeRideStatus', ride_views.changeRideStatus, name='changeRideStatus')
 
 ]
 
