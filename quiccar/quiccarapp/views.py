@@ -17,6 +17,8 @@ from .forms import SignUpForm
 from django.forms.models import model_to_dict
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils.timezone import make_aware
+
 
 def index (request):
     return sendResponse (True, "Hello")
@@ -145,7 +147,7 @@ def viewRidesByUser (request):
         queryRides = Ride.objects.filter (user__username = username)
         queryRides = parseRides (queryRides)
         #qs_json = serializers.serialize('json', rides)
-        return sendResponse(True, queryRides ) #, content_type='application/json')
+        return sendResponse(True, queryRides )
 '''
 @login_required
 @csrf_exempt
@@ -193,6 +195,8 @@ def searchRides (request):
         ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION)
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
 
+        ride.time = make_aware(ride.time)
+
         #Neighbouring geohash blocks for start and end points
         startNeighbours = findNeighbours (ride.startHash)
         endNeighbours = findNeighbours (ride.endHash)
@@ -205,10 +209,18 @@ def searchRides (request):
         startRegex = makeRegex (startNeighbours)
         endRegex = makeRegex (endNeighbours) 
         
+        #print (ride.time)
+        queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True) #''',time__gte = ride.time''')
+        queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex, time__gt = ride.time.date())
         
-        queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True)
-        queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex)
+        #print (ride.time.time() <    queryRides[0].time.time())
+        '''
+        for q in queryRides:
+            print (q.time>ride.time)
+            '''
+
         queryRides = parseRides (queryRides)
+
         #queryRidesJson = serializers.serialize ('json', queryRides)
         #return HttpResponse (queryRides, content_type = 'application/json')
         return sendResponse (True, queryRides)
@@ -278,3 +290,20 @@ def verifyToken (request):
         
     else:
         return sendResponse(False, 'Incorrect method')
+
+
+@login_required
+@csrf_exempt
+def changeRideStatus (request):
+    if request.method == 'GET':
+        data = request.GET.dict()
+        data['status']=data['status'].capitalize()
+        query = Ride.objects.filter(pk = data['id'], user = request.user).first()
+        if query is None:
+            return sendResponse(False, 'Incorrect ride ID')
+        query.isActive = data['status']
+        query.save()
+        return sendResponse (True, None)
+    else:
+        return sendResponse(False, 'Incorrect method')
+

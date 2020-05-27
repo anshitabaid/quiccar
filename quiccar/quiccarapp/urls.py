@@ -11,7 +11,8 @@ urlpatterns = [
     path ('viewRidesByUser', views.viewRidesByUser, name = 'viewRidesByUser'),
     path ('searchRide', views.searchRides, name = 'searchRides'), 
     path('registerToken', views.registerToken, name = 'registerToken'),
-    path('verifyToken', views.verifyToken, name = 'verifyToken')
+    path('verifyToken', views.verifyToken, name = 'verifyToken'), 
+    path ('changeRideStatus', views.changeRideStatus, name='changeRideStatus')
 
 ]
 
