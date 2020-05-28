@@ -17,7 +17,7 @@ from .forms import SignUpForm
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import make_aware
-
+from django.utils.timezone import localtime 
 
 @csrf_exempt
 @login_required
@@ -32,6 +32,7 @@ def insertRide (request):
             return sendResponse (False, e)
         ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION+1)
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION+1)
+        ride.time = make_aware(ride.time)
         ride.save()
         return sendResponse(True, None)
         
@@ -42,7 +43,9 @@ def insertRide (request):
 def viewRidesByUser (request):
     if request.method=='GET':
         username = request.GET['username']
-        queryRides = Ride.objects.filter (user__username = username)
+        queryRides = Ride.objects.filter (user__username = username).order_by('-time')
+        for q in queryRides:
+            q.time=localtime(q.time)
         queryRides = parseRides (queryRides)
         #qs_json = serializers.serialize('json', rides)
         return sendResponse(True, queryRides )
@@ -62,6 +65,7 @@ def searchRides (request):
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
 
         ride.time = make_aware(ride.time)
+        print (ride.time.tzinfo)
 
         #Neighbouring geohash blocks for start and end points
         startNeighbours = findNeighbours (ride.startHash)
@@ -75,20 +79,14 @@ def searchRides (request):
         startRegex = makeRegex (startNeighbours)
         endRegex = makeRegex (endNeighbours) 
         
-        #print (ride.time)
         queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True) #''',time__gte = ride.time''')
-        queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex, time__gt = ride.time.date())
+        queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex, time__gte = ride.time).order_by('-time')
         
-        #print (ride.time.time() <    queryRides[0].time.time())
-        '''
         for q in queryRides:
-            print (q.time>ride.time)
-            '''
+            q.time=localtime(q.time)
 
         queryRides = parseRides (queryRides)
 
-        #queryRidesJson = serializers.serialize ('json', queryRides)
-        #return HttpResponse (queryRides, content_type = 'application/json')
         return sendResponse (True, queryRides)
     return sendResponse(False, 'Incorrect method')
 
@@ -98,10 +96,14 @@ def searchRides (request):
 def changeRideStatus (request):
     if request.method == 'GET':
         data = request.GET.dict()
+
         data['status']=data['status'].capitalize()
         query = Ride.objects.filter(pk = data['id'], user = request.user).first()
         if query is None:
             return sendResponse(False, 'Incorrect ride ID')
+        now = make_aware(datetime.datetime.now())
+        if data['status']=='True' and now > query.time:
+            return sendResponse (False, 'Can\'t activate an old ride')
         query.isActive = data['status']
         query.save()
         return sendResponse (True, None)
