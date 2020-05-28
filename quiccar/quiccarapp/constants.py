@@ -17,3 +17,5 @@ EMAIL_SUBJECT = 'Password reset'
 TIMEZONE = pytz.timezone ('Asia/Kolkata')
 
 DATETIME_FORMAT = "%d-%b-%Y %H:%M:%S"
+
+MINUTES_CUTOFF=15

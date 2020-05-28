@@ -64,8 +64,8 @@ def searchRides (request):
         ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION)
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
 
-        ride.time = make_aware(ride.time)
-        print (ride.time.tzinfo)
+        ride.time = make_aware(ride.time)-datetime.timedelta(minutes=MINUTES_CUTOFF)
+        
 
         #Neighbouring geohash blocks for start and end points
         startNeighbours = findNeighbours (ride.startHash)
@@ -79,8 +79,8 @@ def searchRides (request):
         startRegex = makeRegex (startNeighbours)
         endRegex = makeRegex (endNeighbours) 
         
-        queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True) #''',time__gte = ride.time''')
-        queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex, time__gte = ride.time).order_by('-time')
+        queryRides = Ride.objects.filter (~Q(user__username=ride.user.username), startHash__startswith = likeStartHash, endHash__startswith = likeEndHash, isActive = True, time__gte = ride.time) 
+        queryRides = queryRides.filter (startHash__regex = startRegex, endHash__regex = endRegex).order_by('time')
         
         for q in queryRides:
             q.time=localtime(q.time)
