@@ -34,6 +34,10 @@ def verifyEmail(request):
             emailToken.full_clean()
         except ValidationError:
             return sendResponse (False, 'Validation Error')
+        try:
+            send_mail('Email Verification','Your OTP is ' + token, settings.EMAIL_HOST_USER, [email], fail_silently=False)   
+        except Exception as e:
+            return sendResponse(False, 'Mail not sent')
         emailToken.save()
         return sendResponse(True, None)
     
