@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
+
+User._meta.get_field('email')._unique = True
+
 '''
 class User (models.Model):
     number = models.CharField (max_length = 10, primary_key = True, unique = True, validators = [PHONENUMBER_VALIDATOR])
@@ -79,9 +82,14 @@ def save_user_profile(sender, instance, **kwargs):
 
 class PasswordReset (models.Model):
     username = models.CharField (max_length=150, primary_key = True)
-    token = models.CharField (max_length=TOKEN_LENGTH)
+    token = models.CharField (max_length=FP_TOKEN_LENGTH)
     added =models.DateTimeField (auto_now= True, null = True )
 
     def __str__ (self):
         return self.username
 
+class EmailToken (models.Model):
+    email = models.EmailField ()
+    token = models.CharField (max_length=EV_TOKEN_LENGTH)
+    def __str__ (self):
+        return self.email

@@ -8,3 +8,4 @@ class PasswordResetAdmin (admin.ModelAdmin):
 admin.site.register (Ride)
 admin.site.register (Profile)
 admin.site.register (PasswordReset, PasswordResetAdmin)
+admin.site.register (EmailToken)

@@ -101,9 +101,12 @@ def sendResponse (success, message):
     return HttpResponse (json.dumps (response, default = converter),  content_type = 'application/json')
 
 
-def makeToken ():
-    characters=string.ascii_letters+string.digits
-    return ''.join((random.choice(characters) for i in range(TOKEN_LENGTH)))
+def makeToken (tokenLength):
+    if tokenLength == FP_TOKEN_LENGTH:
+        characters=string.ascii_letters+string.digits
+    else:
+        characters = string.digits
+    return ''.join((random.choice(characters) for i in range(tokenLength)))
 
 
 def parseRides(queryRides):

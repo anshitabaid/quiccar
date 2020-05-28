@@ -20,7 +20,36 @@ from django.conf import settings
 from django.utils.timezone import make_aware
 from .views import *
 
+@csrf_exempt
+def verifyEmail(request):
+    if request.method=='GET':
+        email = request.GET.dict()['email']
+        if User.objects.filter (email = email).exists ():
+            return sendResponse(False, 'Email already in use')
+        token = makeToken(EV_TOKEN_LENGTH)
+        emailToken = EmailToken()
+        emailToken.email = email
+        emailToken.token = token
+        try:
+            emailToken.full_clean()
+        except ValidationError:
+            return sendResponse (False, 'Validation Error')
+        emailToken.save()
+        return sendResponse(True, None)
+    
+    elif request.method == 'POST':
+        data = request.POST
+        print (data)
+        try:
+            emailToken = EmailToken.objects.get (email = data['email'], token = data['token'])
+            emailToken.delete()
+            return sendResponse (True, None)
+        except Exception:
+            return sendResponse (False, 'Incorrect email or token')
 
+
+    
+    
 
 @csrf_exempt
 def signup (request):
@@ -66,7 +95,7 @@ def registerToken (request):
         except Exception as e:
             return sendResponse(False, 'Username does not exist')
         pr = PasswordReset (**data)
-        pr.token = makeToken()
+        pr.token = makeToken(FP_TOKEN_LENGTH)
         #Prepare email body
         link= CHANGE_PASSWORD_LINK.format (username=entry.username, token=pr.token)
         body = EMAIL_BODY.format (name = entry.get_short_name(), link = link)
