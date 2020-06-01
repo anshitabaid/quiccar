@@ -12,7 +12,6 @@ from .constants import *
 from geolib import geohash
 from django.db.models import Q
 from django.contrib.auth import login, authenticate, logout
-#from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
 from django.forms.models import model_to_dict
 from django.core.mail import send_mail
@@ -62,13 +61,9 @@ def signup (request):
         user = form.save ()
         user.refresh_from_db
         user.profile.number=form.cleaned_data.get('number')
-        #user.profile.firstname = form.cleaned_data.get('firstname')
-        #user.profile.lastname = form.cleaned_data.get('lastname')
-        #user.profile.email = form.cleaned_data.get('email')
         user.save()
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password1')
-        #user = authenticate (username=username, password = password)
         login (request, user)
         return sendResponse (True, None)
     return sendResponse (False, form.errors)
@@ -138,7 +133,7 @@ def verifyToken (request):
         try:
             entry = PasswordReset.objects.get (username = data['username'], token = data['token'])
         except Exception as e:
-            return HttpResponse('Invalid link')
+            return sendResponse(False, 'Invalid token or username')
         try:
             #find user and update the password
             user = User.objects.get (username = data['username'])
@@ -150,7 +145,7 @@ def verifyToken (request):
             print (e)
             return render (request, 'password_reset.html',{'flag':True, 'message':'Invalid password', 'username':data['username'], 'token': data['token']})
         
-        return HttpResponse('Password reset successful!')
+        return sendResponse(True, 'Password reset successful!')
         
     else:
         return sendResponse(False, 'Incorrect method')

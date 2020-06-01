@@ -18,4 +18,4 @@ TIMEZONE = pytz.timezone ('Asia/Kolkata')
 
 DATETIME_FORMAT = "%d-%b-%Y %H:%M:%S"
 
-MINUTES_CUTOFF=15
+MINUTES_CUTOFF=60

@@ -42,19 +42,6 @@ def isDataValid (phone, email, firstname, lastname):
     return True
 
 def makeRegex(nbr):
-    '''
-    neighbours=nbr
-    base = '(.....{})'
-    rgx = ''
-    l = len(neighbours)
-    print (l)
-    for i in range (l-1):
-        rgx = rgx + base.format (neighbours[i][-VARY_PREC]) + '|'
-    rgx = rgx + base.format (neighbours[l-1][-VARY_PREC])
-    rgx = '^(' + rgx +')'
-    print (rgx)
-    '''
-    
     rgx = '^((.....{})|(.....{})|(.....{})|(.....{})|(.....{})|(.....{})|(.....{})|(.....{})|(.....{}))'.format (
         nbr[0][-VARY_PREC], nbr[1][-VARY_PREC], nbr[2][-VARY_PREC], nbr[3][-VARY_PREC], 
         nbr[4][-VARY_PREC], nbr[5][-VARY_PREC], nbr[6][-VARY_PREC], nbr[7][-VARY_PREC], nbr[8][-VARY_PREC]

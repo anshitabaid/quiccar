@@ -25,6 +25,7 @@ def insertRide (request):
     if request.method=='GET':
         data = request.GET.dict()
         data['user'] = request.user
+        data['isActive']=True
         ride = Ride(**data)
         try:
             ride.full_clean()
@@ -64,6 +65,7 @@ def searchRides (request):
         ride.startHash = geohash.encode (float(ride.startX), float(ride.startY), PRECISION)
         ride.endHash = geohash.encode (float(ride.endX), float(ride.endY), PRECISION)
 
+        #also include rides from upto MINUTES_CUTOFF minutes ago
         ride.time = make_aware(ride.time)-datetime.timedelta(minutes=MINUTES_CUTOFF)
         
 
